@@ -229,70 +229,61 @@ class ESC: public MotorInterface
 
 
 
-
-
-
-class I2CCOMMANDER: public MotorInterface
-{
-    private:
-        
-
 // our RosmoESC's address...
 #define TARGET_I2C_ADDRESS 0x60
 
 
-// global instance of commander - controller device version
-I2CCommanderMaster commander;
 
-void setup() {
-    // slow start - give RosmoESC a chance to boot up, serial to connect, etc...
-    delay(1000);
+class I2CCOMMANDER: public MotorInterface {
+    
+    private:
+        // global instance of commander - controller device version
+        I2CCommanderMaster commander;
 
-    // this is a debug setup so initialize and wait for serial connection
-    Serial.begin(115200);
-    while (!Serial);
+        void setup() {
+            // slow start - give RosmoESC a chance to boot up, serial to connect, etc...
+            delay(1000);
 
-    while (!Wire.begin(21, 22, 100000)) {    // standard wire pins for ESP32 PICO Kit v4 
-        Serial.println("I2C failed to initialize");
-        delay(1000);
-    } 
-    commander.addI2CMotors(TARGET_I2C_ADDRESS, 1); // only one motor in my test setup
-    commander.init();
-    Serial.println("I2C Commander intialized.");
+            // this is a debug setup so initialize and wait for serial connection
+            Serial.begin(115200);
+            while (!Serial);
 
+            while (!Wire.begin(21, 22, 100000)) {    // standard wire pins for ESP32 PICO Kit v4 
+                Serial.println("I2C failed to initialize");
+                delay(1000);
+            } 
+            commander.addI2CMotors(TARGET_I2C_ADDRESS, 1); // only one motor in my test setup
+            commander.init();
+            Serial.println("I2C Commander intialized.");
+        };
 
 
     protected:
-        void forward(int pwm) override
-        {
-        (commander.writeRegister(0, REG_TARGET, &targetSpeed, 4)!=4) 
-           // old: motor_.writeMicroseconds(1500 + pwm);
-        }
-
-        void reverse(int pwm) override
-        {
-        (commander.writeRegister(0, REG_TARGET, &targetSpeed, -1)!=-1) 
-           // old motor_.writeMicroseconds(1500 + pwm);
-        }
-
- //   public:
- //       I2CCOMMANDER(float pwm_frequency, int pwm_bits, bool invert, int pwm_pin, int unused=-1, int unused2=-1): 
- //           MotorInterface(invert),
-  //          pwm_pin_(pwm_pin)
-  //      {
-  //          motor_.attach(pwm_pin);
+        void forward(int pwm) override {
+            float targetSpeed = pwm;
+            if (commander.writeRegister(0, REG_TARGET, &targetSpeed, 4)!=4)
+                Serial.println("Write error!");
             
-            //ensure that the motor is in neutral state during bootup
-  //          motor_.writeMicroseconds(1500);
-   //     }
+            // old: motor_.writeMicroseconds(1500 + pwm);
+        };
 
-        void brake() override
-        {
-                (commander.writeRegister(0, REG_TARGET, &targetSpeed, -0)!=-0) 
+        void reverse(int pwm) override {
+            float targetSpeed = -pwm;
+            if (commander.writeRegister(0, REG_TARGET, &targetSpeed, 4)!=4)
+                Serial.println("Write error!");
+            // old motor_.writeMicroseconds(1500 + pwm);
+        };
 
+    public:
+        I2CCOMMANDER(bool invert) : MotorInterface(invert) {
+        };
+
+        void brake() override {
+            float targetSpeed = 0.0f;
+            if (commander.writeRegister(0, REG_TARGET, &targetSpeed, 4)!=4)
+                Serial.println("Write error!");
            // old motor_.writeMicroseconds(1500);         
-        }
-//};
+        };
    
 };
 
