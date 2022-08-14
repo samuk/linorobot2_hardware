@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #ifndef DEFAULT_MOTOR
-#define I2CCOMMANDER_MOTOR
+#define DEFAULT_MOTOR
 
 #include <Arduino.h>
 #include <Servo.h> 
@@ -259,18 +259,39 @@ void setup() {
     commander.addI2CMotors(TARGET_I2C_ADDRESS, 1); // only one motor in my test setup
     commander.init();
     Serial.println("I2C Commander intialized.");
-}
-
-#endif
 
 
+    protected:
+        void forward(int pwm) override
+        {
+            motor_.writeMicroseconds(1500 + pwm);
+        }
 
+        void reverse(int pwm) override
+        {
+            motor_.writeMicroseconds(1500 + pwm);
+        }
 
+    public:
+        I2CCOMMANDER(float pwm_frequency, int pwm_bits, bool invert, int pwm_pin, int unused=-1, int unused2=-1): 
+            MotorInterface(invert),
+            pwm_pin_(pwm_pin)
+        {
+            motor_.attach(pwm_pin);
+            
+            //ensure that the motor is in neutral state during bootup
+            motor_.writeMicroseconds(1500);
+        }
 
-
+        void brake() override
+        {
+            motor_.writeMicroseconds(1500);         
+        }
+};
    
 };
 
+#endif
 
 
 
