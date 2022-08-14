@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #ifndef DEFAULT_MOTOR
-#define DEFAULT_MOTOR
+#define I2CCOMMANDER_MOTOR
 
 #include <Arduino.h>
 #include <Servo.h> 
