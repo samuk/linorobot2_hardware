@@ -261,33 +261,38 @@ void setup() {
     Serial.println("I2C Commander intialized.");
 
 
+
     protected:
         void forward(int pwm) override
         {
-            motor_.writeMicroseconds(1500 + pwm);
+        (commander.writeRegister(0, REG_TARGET, &targetSpeed, 4)!=4) 
+           // old: motor_.writeMicroseconds(1500 + pwm);
         }
 
         void reverse(int pwm) override
         {
-            motor_.writeMicroseconds(1500 + pwm);
+        (commander.writeRegister(0, REG_TARGET, &targetSpeed, -1)!=-1) 
+           // old motor_.writeMicroseconds(1500 + pwm);
         }
 
-    public:
-        I2CCOMMANDER(float pwm_frequency, int pwm_bits, bool invert, int pwm_pin, int unused=-1, int unused2=-1): 
-            MotorInterface(invert),
-            pwm_pin_(pwm_pin)
-        {
-            motor_.attach(pwm_pin);
+ //   public:
+ //       I2CCOMMANDER(float pwm_frequency, int pwm_bits, bool invert, int pwm_pin, int unused=-1, int unused2=-1): 
+ //           MotorInterface(invert),
+  //          pwm_pin_(pwm_pin)
+  //      {
+  //          motor_.attach(pwm_pin);
             
             //ensure that the motor is in neutral state during bootup
-            motor_.writeMicroseconds(1500);
-        }
+  //          motor_.writeMicroseconds(1500);
+   //     }
 
         void brake() override
         {
-            motor_.writeMicroseconds(1500);         
+                (commander.writeRegister(0, REG_TARGET, &targetSpeed, -0)!=-0) 
+
+           // old motor_.writeMicroseconds(1500);         
         }
-};
+//};
    
 };
 
